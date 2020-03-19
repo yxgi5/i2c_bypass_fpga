@@ -1,5 +1,5 @@
 // i2c_bypass:
-// 不区分主从端，从FPGA透传
+// 区分主从端,1主，2从，从FPGA透传
 // 必须设置上拉或外置上拉电阻
 // inout port must be pulled up!!
 
@@ -13,10 +13,12 @@ module i2c_bypass(
 );
 
 input wire  clk;
-inout wire	scl1;
+input wire	scl1;
 inout wire	sda1;
-inout wire	scl2;
+output	scl2;
 inout wire	sda2;
+
+assgin scl2 = scl1;
 
 wire SDA_I1;
 wire SDA_I2;
@@ -103,83 +105,6 @@ begin
         default:
         begin
             ST_SDA_STATE    <= ST_SDA_IDLE;
-        end
-    end
-end
-
-wire SCL_I1;
-wire SCL_I2;
-reg SCL_T1;
-reg SCL_T2;
-
-reg [2:0]    ST_SCL_STATE;
-parameter    ST_SCL_IDLE =3'b001;
-parameter    ST_SCL_12   =3'b011;
-parameter    ST_SCL_21   =3'b100;
-
-assign scl1 = (SCL_T1)? 1'bz: 1'b0;
-assign scl2 = (SCL_T2)? 1'bz: 1'b0;
-assign SCL_I1 = (SDA_T1)? scl1:1'bz;
-assign SCL_I2 = (SDA_T2)? scl2:1'bz;
-
-always @(posedge clk or negedge reset_n)
-begin
-    if (reset_n == 1'b0) 
-    begin
-        SCL_T1 <= 1'b1;
-        SCL_T2 <= 1'b1;
-        ST_SCL_STATE <= ST_SCL_IDLE;
-    end
-    else
-    begin
-        case(ST_SCL_STATE)
-        ST_SCL_IDLE: // wait for SCL_I1 or SCL_I2 to be pulled low
-        begin
-            SCL_T1 <= 1'b1; // both OBUFT in high-impedance state
-            SCL_T2 <= 1'b1;
-            if (SCL_I1 == 1'b0)
-            begin
-                SCL_T2 <= 1'b0; // scl driven by SCL_O2 is now low
-                ST_SCL_STATE <= ST_SCL_12;
-            end
-            else if (SCL_I2 == 1'b0)
-            begin
-                SCL_T1 <= 1'b0; // scl driven by SCL_O1 is now low 
-                ST_SCL_STATE <= ST_SCL_21;
-            end
-            else
-            begin
-                ST_SCL_STATE <= ST_SCL_IDLE;
-            end
-        end
-        
-        ST_SCL_12:  // wait for SCL_I1 to go high
-        begin
-            if (SCL_I1 == 1'b1)
-            begin
-                ST_SCL_STATE <= ST_SCL_IDLE;
-            end
-            else
-            begin
-                ST_SCL_STATE <= ST_SCL_12;
-            end
-        end
-
-        ST_SCL_21:  // wait for SCL_I2 to go high
-        begin
-            if (SCL_I2 == 1'b1)
-            begin
-                ST_SCL_STATE <= ST_SCL_IDLE;
-            end
-            else
-            begin
-                ST_SCL_STATE <= ST_SCL_21;
-            end
-        end
-
-        default:
-        begin
-            ST_SCL_STATE    <= ST_SCL_IDLE;
         end
     end
 end
