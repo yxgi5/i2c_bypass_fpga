@@ -18,7 +18,26 @@ inout wire	sda1;
 output	scl2;
 inout wire	sda2;
 
-assgin scl2 = scl1;
+reg scl2;
+
+always @(posedge clk or negedge reset_n)
+begin
+    if (reset_n == 1'b0) 
+    begin
+        scl2 <= 1'b1;
+    end
+    else
+    begin
+        if (scl1)
+        begin
+            scl2 <= 1'b1;
+        end
+        else
+        begin
+            scl2 <= 1'b0;
+        end
+    end
+end
 
 wire SDA_I1;
 wire SDA_I2;
