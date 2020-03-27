@@ -4,21 +4,19 @@
 // inout port must be pulled up!!
 
 module i2c_bypass(
-    reset_n,
-    clk,
-	scl1,
-	sda1,
-	scl2,
-	sda2
+    input   reset_n,
+    input   clk,
+	input   scl1,
+	inout   sda1,
+	output	scl2,
+	inout   sda2
 );
 
-input wire  clk;
-input wire	scl1;
-inout wire	sda1;
-output	scl2;
-inout wire	sda2;
-
-reg scl2;
+wire    clk;
+wire	scl1;
+wire	sda1;
+wire	sda2;
+reg     scl2;
 
 always @(posedge clk or negedge reset_n)
 begin
@@ -125,6 +123,7 @@ begin
         begin
             ST_SDA_STATE    <= ST_SDA_IDLE;
         end
+        endcase
     end
 end
 
