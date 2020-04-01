@@ -27,7 +27,7 @@ reg SDA_T2;
 
 reg [2:0]    ST_SDA_STATE;
 parameter    ST_SDA_IDLE =3'b001;
-parameter    ST_SDA_12   =3'b011;
+parameter    ST_SDA_12   =3'b010;
 parameter    ST_SDA_21   =3'b100;
 
 //assign sda1 = (SDA_T1)? 1'bz: SDA_O1;
@@ -115,7 +115,7 @@ reg SCL_T2;
 
 reg [2:0]    ST_SCL_STATE;
 parameter    ST_SCL_IDLE =3'b001;
-parameter    ST_SCL_12   =3'b011;
+parameter    ST_SCL_12   =3'b010;
 parameter    ST_SCL_21   =3'b100;
 
 assign scl1 = (SCL_T1)? 1'bz: 1'b0;
