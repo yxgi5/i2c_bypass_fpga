@@ -104,7 +104,7 @@ begin
         begin
             ST_SDA_STATE    <= ST_SDA_IDLE;
         end
-		endcase
+        endcase
     end
 end
 
@@ -182,7 +182,7 @@ begin
         begin
             ST_SCL_STATE    <= ST_SCL_IDLE;
         end
-		endcase
+        endcase
     end
 end
 
