@@ -9,3 +9,4 @@ i2c signal bypass fpga
 
 input clock should be much bigger than 400kHz/1MHz, such as 100MHz.
 
+![result](./doc/1363530651.jpg)
