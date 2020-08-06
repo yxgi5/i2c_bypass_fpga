@@ -20,6 +20,7 @@ wire	sda2;
 
 reg SDA_T1;
 reg SDA_T2;
+
 reg [10:0]   sda_delay_cnt;
 reg [2:0]    ST_SDA_STATE;
 parameter    ST_SDA_IDLE =3'b001;
@@ -27,9 +28,13 @@ parameter    ST_SDA_12   =3'b010;
 parameter    ST_SDA_21   =3'b100;
 parameter    ST_SDA_DELAY   =3'b000;
 
-assign sda1 = (SDA_T1)? 1'b0:1'bz;
-assign sda2 = (SDA_T2)? 1'b0:1'bz;
 
+reg SDA_O1;
+reg SDA_O2;
+//assign sda1 = (SDA_T1)? 1'b0:1'bz;
+//assign sda2 = (SDA_T2)? 1'b0:1'bz;
+assign sda1 = (SDA_T1)? SDA_O1:1'bz;
+assign sda2 = (SDA_T2)? SDA_O2:1'bz;
 
 always @(posedge clk or negedge reset_n)
 begin
@@ -37,6 +42,8 @@ begin
     begin
         SDA_T1 <= 1'b0;
         SDA_T2 <= 1'b0;
+        SDA_O1 <= 1'b1;
+        SDA_O2 <= 1'b1;
         ST_SDA_STATE <= ST_SDA_IDLE;
         sda_delay_cnt <= 11'b0;
     end
@@ -51,16 +58,22 @@ begin
             begin
                 SDA_T1 <= 1'b0;
                 SDA_T2 <= 1'b1; // sda driven by SDA_O2 is now low
+                SDA_O1 <= 1'b1;
+                SDA_O2 <= 1'b0;
                 ST_SDA_STATE <= ST_SDA_12;
             end
             else if (sda2 == 1'b0)
             begin
                 SDA_T1 <= 1'b1; // sda driven by SDA_O1 is now low 
                 SDA_T2 <= 1'b0;
+                SDA_O1 <= 1'b0;
+                SDA_O2 <= 1'b1;
                 ST_SDA_STATE <= ST_SDA_21;
             end
             else
             begin
+                SDA_O1 <= 1'b1;
+                SDA_O2 <= 1'b1;
                 ST_SDA_STATE <= ST_SDA_IDLE;
             end
         end
@@ -70,11 +83,17 @@ begin
             if (sda1 == 1'b1)
             begin
                 SDA_T1 <= 1'b0;
-                SDA_T2 <= 1'b0;
+                SDA_T2 <= 1'b1;
+                SDA_O1 <= 1'b1;
+                SDA_O2 <= 1'b1;
                 ST_SDA_STATE <= ST_SDA_DELAY;
             end
             else
             begin
+				SDA_T1 <= 1'b0;
+                SDA_T2 <= 1'b1; // sda driven by SDA_O2 is now low
+                SDA_O1 <= 1'b1;
+                SDA_O2 <= 1'b0;
                 ST_SDA_STATE <= ST_SDA_12;
             end
         end
@@ -83,12 +102,18 @@ begin
         begin
             if (sda2 == 1'b1)
             begin
-                SDA_T1 <= 1'b0;
+                SDA_T1 <= 1'b1;
                 SDA_T2 <= 1'b0;
+                SDA_O1 <= 1'b1;
+                SDA_O2 <= 1'b1;
                 ST_SDA_STATE <= ST_SDA_DELAY;
             end
             else
             begin
+				SDA_T1 <= 1'b1; // sda driven by SDA_O1 is now low 
+                SDA_T2 <= 1'b0;
+                SDA_O1 <= 1'b0;
+                SDA_O2 <= 1'b1;
                 ST_SDA_STATE <= ST_SDA_21;
             end
         end
@@ -96,14 +121,14 @@ begin
 		// 10k pull-up 1.8v rising time 400ns, 3.3V rising time 800ns, base on 64M clk, Tclk=16ns, 800/16=50
         ST_SDA_DELAY:
         begin
-            if(sda_delay_cnt<50)
+            if(sda_delay_cnt<2)
             begin
                 sda_delay_cnt <= sda_delay_cnt + 1'b1;
                 ST_SDA_STATE <= ST_SDA_DELAY;
             end
             else
             begin
-				sda_delay_cnt <= 11'b0;
+                sda_delay_cnt <= 11'b0;
                 ST_SDA_STATE <= ST_SDA_IDLE;
             end
         end
@@ -112,7 +137,7 @@ begin
         begin
             SDA_T1 <= 1'b0;
             SDA_T2 <= 1'b0;
-			sda_delay_cnt <= 11'b0;
+            sda_delay_cnt <= 11'b0;
             ST_SDA_STATE    <= ST_SDA_IDLE;
         end
         endcase
@@ -130,9 +155,12 @@ parameter    ST_SCL_12   =3'b010;
 parameter    ST_SCL_21   =3'b100;
 parameter    ST_SCL_DELAY   =3'b000;
 
-assign scl1 = (SCL_T1)? 1'b0:1'bz;
-assign scl2 = (SCL_T2)? 1'b0:1'bz;
-
+reg SCL_O1;
+reg SCL_O2;
+//assign scl1 = (SCL_T1)? 1'b0:1'bz;
+//assign scl2 = (SCL_T2)? 1'b0:1'bz;
+assign scl1 = (SCL_T1)? SCL_O1:1'bz;
+assign scl2 = (SCL_T2)? SCL_O2:1'bz;
 
 always @(posedge clk or negedge reset_n)
 begin
@@ -140,6 +168,8 @@ begin
     begin
         SCL_T1 <= 1'b0;
         SCL_T2 <= 1'b0;
+        SCL_O1 <= 1'b1;
+        SCL_O2 <= 1'b1;
         ST_SCL_STATE <= ST_SCL_IDLE;
         scl_delay_cnt <= 11'b0;
     end
@@ -154,16 +184,22 @@ begin
             begin
                 SCL_T1 <= 1'b0;
                 SCL_T2 <= 1'b1; // scl driven by SCL_O2 is now low
+                SCL_O1 <= 1'b1;
+                SCL_O2 <= 1'b0;
                 ST_SCL_STATE <= ST_SCL_12;
             end
             else if (scl2 == 1'b0)
             begin
                 SCL_T1 <= 1'b1; // scl driven by SCL_O1 is now low 
                 SCL_T2 <= 1'b0;
+                SCL_O1 <= 1'b0;
+                SCL_O2 <= 1'b1;
                 ST_SCL_STATE <= ST_SCL_21;
             end
             else
             begin
+                SCL_O1 <= 1'b1;
+                SCL_O2 <= 1'b1;
                 ST_SCL_STATE <= ST_SCL_IDLE;
             end
         end
@@ -172,12 +208,18 @@ begin
         begin
             if (scl1 == 1'b1)
             begin
-                SCL_T1 <= 1'b0; // both OBUFT in high-impedance state
-                SCL_T2 <= 1'b0;
+                SCL_T1 <= 1'b0;
+                SCL_T2 <= 1'b1;
+                SCL_O1 <= 1'b1;
+                SCL_O2 <= 1'b1;
                 ST_SCL_STATE <= ST_SCL_DELAY;
             end
             else
             begin
+				SCL_T1 <= 1'b0;
+                SCL_T2 <= 1'b1; // scl driven by SCL_O2 is now low
+                SCL_O1 <= 1'b1;
+                SCL_O2 <= 1'b0;
                 ST_SCL_STATE <= ST_SCL_12;
             end
         end
@@ -186,12 +228,18 @@ begin
         begin
             if (scl2 == 1'b1)
             begin
-                SCL_T1 <= 1'b0; // both OBUFT in high-impedance state
+                SCL_T1 <= 1'b1;
                 SCL_T2 <= 1'b0;
+                SCL_O1 <= 1'b1;
+                SCL_O2 <= 1'b1;
                 ST_SCL_STATE <= ST_SCL_DELAY;
             end
             else
             begin
+				SCL_T1 <= 1'b1; // scl driven by SCL_O1 is now low 
+                SCL_T2 <= 1'b0;
+                SCL_O1 <= 1'b0;
+                SCL_O2 <= 1'b1;
                 ST_SCL_STATE <= ST_SCL_21;
             end
         end
@@ -199,14 +247,14 @@ begin
 		// 10k pull-up 1.8v rising time 400ns, 3.3V rising time 800ns, base on 64M clk, Tclk=16ns, 800/16=50
         ST_SCL_DELAY:
         begin
-            if(scl_delay_cnt<50)
+            if(scl_delay_cnt<2)
             begin
                 scl_delay_cnt <= scl_delay_cnt + 1'b1;
                 ST_SCL_STATE <= ST_SCL_DELAY;
             end
             else
             begin
-				scl_delay_cnt <= 11'b0;
+                scl_delay_cnt <= 11'b0;
                 ST_SCL_STATE <= ST_SCL_IDLE;
             end
         end
@@ -215,7 +263,7 @@ begin
         begin
             SCL_T1 <= 1'b0; // both OBUFT in high-impedance state
             SCL_T2 <= 1'b0;
-			scl_delay_cnt <= 11'b0;
+            scl_delay_cnt <= 11'b0;
             ST_SCL_STATE    <= ST_SCL_IDLE;
         end
         endcase
