@@ -11,5 +11,12 @@ input clock should be much bigger than 400kHz/1MHz, such as 100MHz.
 
 
 -----------------------update-------------------------------
-tested on lattice XO3 working clk 64MHz， io settings： No pull up/down，open-drain off. 
+
+tested on lattice XO3 working clk 64MHz， 
+
+io settings： No pull up/down，open-drain off.
+ 
 external pull-up both 1.8v/3.3v side are 10k Ohm
+
+![io_settings_for_xo3](./io_settings_for_xo3.jpg)
+
